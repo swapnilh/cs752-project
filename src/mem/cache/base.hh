@@ -506,6 +506,7 @@ class BaseCache : public MemObject
         return blocked != 0;
     }
 
+    bool getisTopLevel() const { return isTopLevel; }
     /**
      * Marks the access path of the cache as blocked for the given cause. This
      * also sets the blocked flag in the slave interface.

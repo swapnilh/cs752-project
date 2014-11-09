@@ -264,6 +264,7 @@ public:
          if (blk->isValid()) {
              replacements[0]++;
              totalRefs += blk->refCount;
+	     DPRINTF(Cache, "TRACKING_LIVE_LINES || isTopLevel=%d || refCount=%d for address %x \n",  cache->getisTopLevel(), blk->refCount, pkt->getAddr());
              ++sampledRefs;
              blk->refCount = 0;
 
