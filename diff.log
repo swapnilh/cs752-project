@@ -1,0 +1,81 @@
+diff --git a/.hg/hgrc b/.hg/hgrc
+index 15c6d15..73826a2 100644
+--- a/.hg/hgrc
++++ b/.hg/hgrc
+@@ -1,2 +1,13 @@
+ [paths]
+ default = http://repo.gem5.org/gem5
++
++# The following lines were automatically added by gem5/SConstruct
++# to provide the gem5 style-checking hooks
++[extensions]
++style = /afs/cs.wisc.edu/u/s/w/swapnilh/private/research/gem5_752/gem5/util/style.py
++
++[hooks]
++pretxncommit.style = python:style.check_style
++pre-qrefresh.style = python:style.check_style
++# End of SConstruct additions
++
+diff --git a/configs/common/Caches.py b/configs/common/Caches.py
+index 9f7ac7a..9551ac8 100644
+--- a/configs/common/Caches.py
++++ b/configs/common/Caches.py
+@@ -61,6 +61,7 @@ class L2Cache(BaseCache):
+     mshrs = 20
+     tgts_per_mshr = 12
+     write_buffers = 8
++    count_live_lines = True
+ 
+ class IOCache(BaseCache):
+     assoc = 8
+diff --git a/src/mem/cache/BaseCache.py b/src/mem/cache/BaseCache.py
+index 9ffe399..9dbd43f 100644
+--- a/src/mem/cache/BaseCache.py
++++ b/src/mem/cache/BaseCache.py
+@@ -72,3 +72,5 @@ class BaseCache(MemObject):
+     sequential_access = Param.Bool(False,
+         "Whether to access tags and data sequentially")
+     tags = Param.BaseTags(LRU(), "Tag Store for LRU caches")
++    count_live_lines = Param.Bool(False,
++        "Enabling tracking of live lines in the cache")
+diff --git a/src/mem/cache/base.cc b/src/mem/cache/base.cc
+index faa000c..9a69e6a 100644
+--- a/src/mem/cache/base.cc
++++ b/src/mem/cache/base.cc
+@@ -82,7 +82,8 @@ BaseCache::BaseCache(const Params *p)
+       noTargetMSHR(NULL),
+       missCount(p->max_miss_count),
+       addrRanges(p->addr_ranges.begin(), p->addr_ranges.end()),
+-      system(p->system)
++      system(p->system),
++      countLiveLines(p->count_live_lines)
+ {
+ }
+ 
+diff --git a/src/mem/cache/base.hh b/src/mem/cache/base.hh
+index 297b801..529ee27 100644
+--- a/src/mem/cache/base.hh
++++ b/src/mem/cache/base.hh
+@@ -297,6 +297,10 @@ class BaseCache : public MemObject
+      * The address range to which the cache responds on the CPU side.
+      * Normally this is all possible memory addresses. */
+     const AddrRangeList addrRanges;
++ 
++    /** Adding a bool to enable the counting of live lines
++     */
++    const bool countLiveLines;
+ 
+   public:
+     /** System we are currently operating in. */
+diff --git a/src/mem/cache/tags/base_set_assoc.hh b/src/mem/cache/tags/base_set_assoc.hh
+index ac575d2..4096c2d 100644
+--- a/src/mem/cache/tags/base_set_assoc.hh
++++ b/src/mem/cache/tags/base_set_assoc.hh
+@@ -263,6 +263,7 @@ public:
+          // coherence protocol says it can't be.
+          if (blk->isValid()) {
+              replacements[0]++;
++	     DPRINTF(Cache, "TRACKING_LIVE_LINES = %d isTopLevel=%d || refCount=%d for address %x \n", cache->countLiveLines, cache->isTopLevel, blk->refCount, pkt->getAddr());
+              totalRefs += blk->refCount;
+              ++sampledRefs;
+              blk->refCount = 0;
