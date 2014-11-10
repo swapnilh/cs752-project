@@ -59,6 +59,7 @@
 #include "mem/packet.hh"
 #include "params/BaseSetAssoc.hh"
 
+#include "debug/CS752.hh"
 /**
  * A BaseSetAssoc cache tag store.
  * @sa  \ref gem5MemorySystem "gem5 Memory System"
@@ -264,7 +265,7 @@ public:
          if (blk->isValid()) {
              replacements[0]++;
              totalRefs += blk->refCount;
-	     DPRINTF(Cache, "TRACKING_LIVE_LINES || isTopLevel=%d || refCount=%d for address %x \n",  cache->getisTopLevel(), blk->refCount, pkt->getAddr());
+	     DPRINTF(CS752, "TRACKING_LIVE_LINES || isTopLevel=%d || refCount=%d for address %x \n",  cache->getisTopLevel(), blk->refCount, pkt->getAddr());
              ++sampledRefs;
              blk->refCount = 0;
 
