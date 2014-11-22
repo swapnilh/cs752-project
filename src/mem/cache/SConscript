@@ -37,6 +37,7 @@ Source('cache.cc')
 Source('blk.cc')
 Source('mshr.cc')
 Source('mshr_queue.cc')
+#Source('data.cc')
 
 DebugFlag('Cache')
 DebugFlag('CachePort')

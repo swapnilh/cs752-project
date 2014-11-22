@@ -83,7 +83,7 @@ BaseSetAssoc::BaseSetAssoc(const Params *p)
     blks = new BlkType[numSets * assoc];
     // allocate data storage in one big chunk
     numBlocks = numSets * assoc;
-    dataBlks = new uint8_t[numBlocks * blkSize];
+    dataBlks = new dataType[numBlocks * blkSize/4]; //FIXME use a parameter for 4!!
 
     unsigned blkIndex = 0;       // index into blks array
     for (unsigned i = 0; i < numSets; ++i) {
@@ -95,7 +95,7 @@ BaseSetAssoc::BaseSetAssoc(const Params *p)
         for (unsigned j = 0; j < assoc; ++j) {
             // locate next cache block
             BlkType *blk = &blks[blkIndex];
-            blk->data = &dataBlks[blkSize*blkIndex];
+            //blk->data = &dataBlks[blkSize*blkIndex];
             ++blkIndex;
 
             // invalidate new cache block
@@ -111,6 +111,7 @@ BaseSetAssoc::BaseSetAssoc(const Params *p)
             blk->size = blkSize;
             sets[i].blks[j]=blk;
             blk->set = i;
+            blk->hasData = 0;
         }
     }
 }

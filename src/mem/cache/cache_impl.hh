@@ -1426,7 +1426,7 @@ Cache<TagStore>::allocateBlock(Addr addr, bool is_secure,
                                PacketList &writebacks)
 {
     BlkType *blk = tags->findVictim(addr);
-
+    // TODO add the follow ptr and invalidate block here
     if (blk->isValid()) {
         Addr repl_addr = tags->regenerateBlkAddr(blk->tag, blk->set);
         MSHR *repl_mshr = mshrQueue.findMatch(repl_addr, blk->isSecure());

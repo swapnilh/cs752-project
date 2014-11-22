@@ -56,6 +56,7 @@
 #include "mem/cache/tags/cacheset.hh"
 #include "mem/cache/base.hh"
 #include "mem/cache/blk.hh"
+#include "mem/cache/data.hh"
 #include "mem/packet.hh"
 #include "params/BaseSetAssoc.hh"
 
@@ -79,6 +80,8 @@ class BaseSetAssoc : public BaseTags
   public:
     /** Typedef the block type used in this tag store. */
     typedef CacheBlk BlkType;
+    /** Typedef the data block type used in this tag store. */
+    typedef DataBlock DataType;
     /** Typedef for a list of pointers to the local block class. */
     typedef std::list<BlkType*> BlkList;
     /** Typedef the set type used in this tag store. */
@@ -99,7 +102,7 @@ class BaseSetAssoc : public BaseTags
     /** The cache blocks. */
     BlkType *blks;
     /** The data blocks, 1 per cache block. */
-    uint8_t *dataBlks;
+    dataType *dataBlks;
 
     /** The amount to shift the address to get the set. */
     int setShift;
@@ -193,7 +196,7 @@ public:
             dataAccesses += assoc;
         }
 
-        if (blk != NULL) {
+        if (blk != NULL && blk->isFilled()) {
             if (blk->whenReady > curTick()
                 && cache->ticksToCycles(blk->whenReady - curTick())
                 > hitLatency) {
@@ -201,6 +204,11 @@ public:
             }
             blk->refCount += 1;
         }
+
+        if (blk != NULL && !blk->isFilled()) {
+            blk->refCount += 1;
+	    //TODO ADD FETCH DATA CODE HERE
+	}
 
         return blk;
     }
@@ -242,7 +250,7 @@ public:
      * Insert the new block into the cache.
      * @param pkt Packet holding the address to update
      * @param blk The block to update.
-     */
+     */ //TODO this function needs to be updated, not sure how
      void insertBlock(PacketPtr pkt, BlkType *blk)
      {
          Addr addr = pkt->getAddr();

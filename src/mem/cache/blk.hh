@@ -99,7 +99,11 @@ class CacheBlk
      * data stored here should be kept consistant with the actual data
      * referenced by this block.
      */
-    uint8_t *data;
+    dataType *data;
+    
+    /** indicates whether this tag has associated data */
+    int hasData;
+
     /** the number of bytes stored in this block. */
     int size;
 
@@ -275,6 +279,14 @@ class CacheBlk
     {
         return (status & BlkSecure) != 0;
     }
+    /**
+     * Checks that a block has data or not.
+     * @return True if the block has data.
+     */
+    bool isFilled() const
+    {
+        return hasData;
+    }
 
     /**
      * Track the fact that a local locked was issued to the block.  If
@@ -342,8 +354,9 @@ class CacheBlk
           default:    s = 'T'; break; // @TODO add other types
         }
         return csprintf("state: %x (%c) valid: %d writable: %d readable: %d "
-                        "dirty: %d tag: %x", status, s, isValid(),
-                        isWritable(), isReadable(), isDirty(), tag);
+                        "dirty: %d tag: %x hasData= %d", status, s, isValid(),
+                        isWritable(), isReadable(), isDirty(), tag, isFilled());
+
     }
 
     /**
